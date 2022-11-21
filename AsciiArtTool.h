@@ -1,15 +1,13 @@
-///
-/// Created by Roy on 2022-11-17
-///
 
 #ifndef HW1_ASCII_ART_TOOL_H
 #define HW1_ASCII_ART_TOOL_H
 
-/* ---------- Imports ---------- */
+/* ---------- Includes ---------- */
 
 #include "RLEList.h"
 
 /* ---------- Functions ---------- */
+
 
 /**
  * Read the given input file `in_stream` and save it as am RLEList.
@@ -21,6 +19,7 @@
  * */
 RLEList asciiArtRead(FILE * in_stream);
 
+
 /**
  * Print out the full image represented in `list` into `out_stream`.
  *
@@ -31,6 +30,7 @@ RLEList asciiArtRead(FILE * in_stream);
  *  TODO
  * */
 RLEListResult asciiArtPrint(RLEList list, FILE *out_stream);
+
 
 /**
  * Encode the image represented in `list` and print it into `out_stream`.
