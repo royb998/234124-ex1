@@ -1,21 +1,13 @@
-#include <malloc.h>
 #include "AsciiArtTool.h"
 
 /* ---------- Macros ---------- */
 
 #define CLOSE_FILE(ptr) do {    \
-    if (NULL != ptr)            \
+    if (NULL != (ptr))          \
     {                           \
         fclose(ptr);            \
         ptr = NULL;             \
     }                           \
-} while (0)
-
-#define FREE_PTR(ptr) do {  \
-    if (NULL != ptr)        \
-    {                       \
-        free((ptr));        \
-    }                       \
 } while (0)
 
 /* ---------- Functions ---------- */
@@ -43,11 +35,11 @@ void encode_image(FILE * source, FILE * target)
     if (RLE_LIST_SUCCESS != result)
     {
         /* TODO: Error output? */
-        FREE_PTR(list);
+        RLEListDestroy(list);
         return;
     }
 
-    FREE_PTR(list);
+    RLEListDestroy(list);
 }
 
 
@@ -94,14 +86,14 @@ void invert_image(FILE * source, FILE * target)
     result = RLEListMap(list, &invert_ascii);
     if (RLE_LIST_SUCCESS != result)
     {
-        FREE_PTR(list);
+        RLEListDestroy(list);
         return;
     }
 
     /* TODO: Check result? */
     asciiArtPrint(list, target);
 
-    FREE_PTR(list);
+    RLEListDestroy(list);
 }
 
 

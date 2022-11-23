@@ -32,7 +32,7 @@ RLEList asciiArtRead(FILE* in_stream)
     /* TODO: Free list and return NULL. */
     if (NULL == in_stream)
     {
-        free(list);
+        RLEListDestroy(list);
         return NULL;
     }
 
