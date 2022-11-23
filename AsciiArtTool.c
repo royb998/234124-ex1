@@ -65,16 +65,11 @@ RLEList asciiArtRead(FILE* in_stream)
 RLEListResult asciiArtPrint(RLEList list, FILE* out_stream)
 {
     RLEListResult result = RLE_LIST_ERROR;
-    char* exported = NULL;
     char current = '\0';
     int write_size = 0;
 
     ASSERT_ARG(list);
     ASSERT_ARG(out_stream);
-
-    exported = RLEListExportToString(list, &result);
-    ASSERT_RESULT(result);
-    assert(exported);
 
     for (int i = 0; i < RLEListSize(list); ++i)
     {

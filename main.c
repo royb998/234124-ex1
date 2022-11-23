@@ -148,7 +148,6 @@ int main(int argc, char* argv[])
 
     if (4 != argc)
     {
-        printf("USAGE: asciiArtTool FLAG SOURCE TARGET\n");
         return 0;
     }
     mode = argv[1];
