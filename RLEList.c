@@ -4,21 +4,20 @@ typedef struct node
 {
     char data;
     int count;
-    struct node *next;
-} *Node;
+    struct node* next;
+} * Node;
 
 struct RLEList_t
 {
-    //TODO: implement
-    struct node *first;
-    struct node *last;
+    Node first;
+    Node last;
     int count;
 };
 
-RLEList RLEListCreate ()
+RLEList RLEListCreate()
 {
     RLEList list = malloc(sizeof(struct RLEList_t));
-    if (!list)
+    if (NULL == list)
     {
         return NULL;
     }
@@ -28,7 +27,7 @@ RLEList RLEListCreate ()
     return list;
 }
 
-void RLEListDestroy (RLEList list)
+void RLEListDestroy(RLEList list)
 {
     if (list == NULL)
     {
@@ -38,72 +37,65 @@ void RLEListDestroy (RLEList list)
     if (list->first != NULL)
     {
         Node node = list->first;
-        while (node)
+        while (NULL != node)
         {
             Node toDelete = node;
             node = node->next;
             free(toDelete);
-
         }
     }
 
     free(list);
 }
 
-RLEListResult RLEListAppend (RLEList list, char value)
+RLEListResult RLEListAppend(RLEList list, char value)
 {
-    if (list == NULL || value == '\0')
+    if (list == NULL)
     {
         return RLE_LIST_NULL_ARGUMENT;
     }
 
-    if (list->first == NULL)
-    {
-        Node newFirst = malloc(sizeof(struct node));
-        if (newFirst == NULL)
-        {
-            return RLE_LIST_OUT_OF_MEMORY;
-        }
-        list->first = list->last = newFirst;
-        newFirst->data = value;
-        newFirst->count = 0;
-        newFirst->next = NULL;
-    }
-
-    if (list->last->data == value)
+    if (NULL != list->last && list->last->data == value)
     {
         list->last->count++;
     }
     else
     {
-        Node newLast = malloc(sizeof(struct node));
-        if (newLast == NULL)
+        Node new = malloc(sizeof(struct node));
+        if (NULL == new)
         {
             return RLE_LIST_OUT_OF_MEMORY;
         }
-        newLast->data = value;
-        newLast->count = 1;
-        newLast->next = NULL;
-        list->last->next = newLast;
-        list->last = newLast;
+        new->data = value;
+        new->count = 1;
+        new->next = NULL;
+
+        if (list->first == NULL)
+        {
+            list->first = list->last = new;
+        }
+        else
+        {
+            list->last->next = new;
+            list->last = new;
+        }
     }
 
     list->count++;
     return RLE_LIST_SUCCESS;
 }
 
-int RLEListSize (RLEList list)
+int RLEListSize(RLEList list)
 {
     if (list == NULL)
     {
         return -1;
-    } else
-    {
-        return list->count;
     }
+
+    return list->count;
 }
 
-RLEListResult RLEListRemove (RLEList list, int index)
+RLEListResult RLEListRemove(RLEList list, int index)
 {
     if (list == NULL)
     {
@@ -116,14 +108,18 @@ RLEListResult RLEListRemove (RLEList list, int index)
 
     int temp_index = index;
     Node current = list->first;
-    Node one_before = NULL;
-    while ((temp_index -= (current->count)) >= 0)
+    Node previous = NULL;
+
+    temp_index -= (current->count);
+    while (temp_index >= 0)
     {
-        one_before = current;
+        previous = current;
         current = current->next;
+        temp_index -= (current->count);
     }
 
     current->count--;
+    /* Remove node if count for current node goes down to 0. */
     if (current->count == 0)
     {
         if (list->first == current)
@@ -134,10 +130,10 @@ RLEListResult RLEListRemove (RLEList list, int index)
         {
             if (current->next == NULL)
             {
-                list->last = one_before;
+                list->last = previous;
             }
 
-            one_before->next = current->next;
+            previous->next = current->next;
         }
 
         free(current);
@@ -145,10 +141,9 @@ RLEListResult RLEListRemove (RLEList list, int index)
 
     list->count--;
     return RLE_LIST_SUCCESS;
-
 }
 
-char RLEListGet (RLEList list, int index, RLEListResult *result)
+char RLEListGet(RLEList list, int index, RLEListResult* result)
 {
     if (list == NULL)
     {
@@ -168,8 +163,10 @@ char RLEListGet (RLEList list, int index, RLEListResult *result)
 
         return 0;
     }
+
     int temp_index = index;
     Node current = list->first;
+
     while (temp_index - (current->count) >= 0)
     {
         temp_index = temp_index - (current->count);
@@ -199,35 +196,49 @@ RLEListResult RLEListMap(RLEList list, MapFunction map_function)
     return RLE_LIST_SUCCESS;
 }
 
+void itoa(int value, char* p_string, int n)
+{
+    snprintf(p_string, n, "%d", value);
+}
+
+int integerSize(int value)
+{
+    char countStr[10];
+
+    itoa(value, countStr, 10);
+    int length = strlen(countStr);
+
+    return length;
+}
+
 char* RLEListExportToString(RLEList list, RLEListResult* result)
 {
-    RLEListResult dummyResult;
-    if (result == NULL)
-    {
-        result = &dummyResult;
-    }
-
     if (list == NULL)
     {
-        *result = RLE_LIST_NULL_ARGUMENT;
+        if (NULL != result)
+        {
+            *result = RLE_LIST_NULL_ARGUMENT;
+        }
         return NULL;
     }
 
     // Resolve final string size
-    char countStr[10];
     int resultStrLength = 0;
+
     for (Node node = list->first; node != NULL; node = node->next)
     {
-        itoa(node->count, countStr, 10);
-        int numLength = strlen(countStr);
+        int numLength = integerSize(node->count);
         resultStrLength += numLength + 2;
     }
 
     // Allocate memory for final string
-       char *resultStr = malloc(resultStrLength + 1);
+    char* resultStr = malloc(resultStrLength + 1);
     if (resultStr == NULL)
     {
-        *result = RLE_LIST_OUT_OF_MEMORY;
+        if (NULL != result)
+        {
+            *result = RLE_LIST_OUT_OF_MEMORY;
+        }
         return NULL;
     }
 
@@ -236,11 +247,13 @@ char* RLEListExportToString(RLEList list, RLEListResult* result)
     for (Node node = list->first; node != NULL; node = node->next)
     {
         sprintf(&resultStr[index], "%c%d\n", node->data, node->count);
-        itoa(node->count, countStr, 10);
-        int length = strlen(countStr);
+        int length = integerSize(node->count);
         index += length + 2;
     }
 
-    *result = RLE_LIST_SUCCESS;
+    if (NULL != result)
+    {
+        *result = RLE_LIST_SUCCESS;
+    }
     return resultStr;
 }
