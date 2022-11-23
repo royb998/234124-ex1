@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "RLEList.h"
 
 typedef struct node
@@ -13,6 +14,49 @@ struct RLEList_t
     Node last;
     int count;
 };
+
+/**
+ * Remove the given `node` from the given list by linking the one before it and
+ * the one after it.
+ *
+ * @note When removing the first node, `previous` should be set to null.
+ * @note `node` must represent no characters, that is, have a count of 0.
+ *
+ * @param list List to remove node from.
+ * @param node Node to remove.
+ * @param previous Node immediately preceding `node`. NULL if `node` is the
+ *      first node in `list`.
+ *
+ * @return
+ *  RLE_LIST_NULL_ARGUMENT if any argument is NULL (when it shouldn't be).
+ *  RLE_LIST_SUCCESS upon successful operation.
+ * */
+RLEListResult removeNode(RLEList list, Node node, Node previous)
+{
+    assert(0 == node->count);
+    assert(node == previous->next);
+    if (NULL == node || (NULL == previous && list->first != node))
+    {
+        return RLE_LIST_NULL_ARGUMENT;
+    }
+
+    /* Only enters if removing the first node. */
+    if (previous == NULL)
+    {
+        list->first = node->next;
+    }
+    else
+    {
+        previous->next = node->next;
+        if (node == list->last)
+        {
+            list->last = previous;
+        }
+    }
+
+    free(node);
+    return RLE_LIST_SUCCESS;
+}
 
 RLEList RLEListCreate()
 {
@@ -122,21 +166,16 @@ RLEListResult RLEListRemove(RLEList list, int index)
     /* Remove node if count for current node goes down to 0. */
     if (current->count == 0)
     {
-        if (list->first == current)
-        {
-            list->first = current->next;
-        }
-        else
-        {
-            if (current->next == NULL)
-            {
-                list->last = previous;
-            }
+        removeNode(list, current, previous);
+    }
 
-            previous->next = current->next;
-        }
-
-        free(current);
+    /* Merge duplicate consecutive characters. */
+    Node next = previous->next;
+    if (previous->data == next->data)
+    {
+        previous->count += next->count;
+        next->count = 0;
+        removeNode(list, next, previous);
     }
 
     list->count--;
@@ -188,9 +227,18 @@ RLEListResult RLEListMap(RLEList list, MapFunction map_function)
         return RLE_LIST_NULL_ARGUMENT;
     }
 
+    Node previous = NULL;
     for (Node node = list->first; node != NULL; node = node->next)
     {
         node->data = map_function(node->data);
+        if (node != list->first && (node->data == previous->data))
+        {
+            previous->count += node->count;
+            node->count = 0;
+            removeNode(list, node, previous);
+            node = previous;
+        }
+        previous = node;
     }
 
     return RLE_LIST_SUCCESS;
