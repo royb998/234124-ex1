@@ -28,6 +28,11 @@ static int number_of_tests = sizeof(tests) / sizeof(tests[0]);
 
 int main(int argc, char **argv)
 {
+	/*RLEList list = RLEListCreate();
+	RLEListAppend(list, 'w');
+	RLEListAppend(list, 'c');
+	RLEListResult  result;
+	RLEListExportToString(list, &result);*/
     if (argc == 1)
     {
         for (int test_idx = 0; test_idx < number_of_tests; test_idx++)
