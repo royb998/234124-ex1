@@ -4,7 +4,7 @@
 
 /* ---------- Includes ---------- */
 
-#include "RLEList.h"
+#include "../RLEList.h"
 
 /* ---------- Functions ---------- */
 
