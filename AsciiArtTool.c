@@ -25,26 +25,38 @@
 
 RLEList asciiArtRead(FILE* in_stream)
 {
-    /* TODO: Check for success. */
-    RLEList list = RLEListCreate();
+    RLEList list = NULL;
+    RLEListResult result;
     char current = '\0';
+    int read_result = 0;
 
-    /* TODO: Free list and return NULL. */
     if (NULL == in_stream)
     {
-        RLEListDestroy(list);
         return NULL;
     }
 
+    list = RLEListCreate();
+    if (NULL == list)
+    {
+        return NULL;
+    }
+
+    /* Add every character in the file to the list. */
     do
     {
-        int result = fread(&current, sizeof(current), 1, in_stream);
-        if (result < 1)
+        read_result = fread(&current, sizeof(current), 1, in_stream);
+        if (read_result < 1)
         {
             break;
         }
 
-        RLEListAppend(list, current);
+        result = RLEListAppend(list, current);
+        if (RLE_LIST_SUCCESS != result)
+        {
+            RLEListDestroy(list);
+            list = NULL;
+            break;
+        }
     } while (EOF != current);
 
     return list;
@@ -53,7 +65,7 @@ RLEList asciiArtRead(FILE* in_stream)
 RLEListResult asciiArtPrint(RLEList list, FILE* out_stream)
 {
     RLEListResult result = RLE_LIST_ERROR;
-    char * exported = NULL;
+    char* exported = NULL;
     char current = '\0';
     int write_size = 0;
 
@@ -64,7 +76,6 @@ RLEListResult asciiArtPrint(RLEList list, FILE* out_stream)
     ASSERT_RESULT(result);
     assert(exported);
 
-    /* TODO: Improve loop. */
     for (int i = 0; i < RLEListSize(list); ++i)
     {
         current = RLEListGet(list, i, &result);
@@ -84,7 +95,7 @@ RLEListResult asciiArtPrint(RLEList list, FILE* out_stream)
 RLEListResult asciiArtPrintEncoded(RLEList list, FILE* out_stream)
 {
     RLEListResult result;
-    char * buffer = NULL;
+    char* buffer = NULL;
     size_t output_size = 0;
     int write_result = 0;
 
@@ -99,9 +110,11 @@ RLEListResult asciiArtPrintEncoded(RLEList list, FILE* out_stream)
     write_result = fwrite(buffer, sizeof(*buffer), output_size, out_stream);
     if (write_result < output_size)
     {
+        free(buffer);
         return RLE_LIST_ERROR;
     }
 
+    free(buffer);
     return RLE_LIST_SUCCESS;
 }
 

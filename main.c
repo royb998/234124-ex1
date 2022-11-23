@@ -20,7 +20,7 @@
  * @param source: File handle to source ascii image.
  * @param target: File handle to write encoded image into.
  * */
-void encode_image(FILE * source, FILE * target)
+void encode_image(FILE* source, FILE* target)
 {
     RLEList list = NULL;
     RLEListResult result;
@@ -34,7 +34,6 @@ void encode_image(FILE * source, FILE * target)
     result = asciiArtPrintEncoded(list, target);
     if (RLE_LIST_SUCCESS != result)
     {
-        /* TODO: Error output? */
         RLEListDestroy(list);
         return;
     }
@@ -72,7 +71,7 @@ char invert_ascii(char c)
  * @param source: File handle to source ascii image.
  * @param target: File handle to write inverted image into.
  * */
-void invert_image(FILE * source, FILE * target)
+void invert_image(FILE* source, FILE* target)
 {
     RLEList list = NULL;
     RLEListResult result;
@@ -90,8 +89,12 @@ void invert_image(FILE * source, FILE * target)
         return;
     }
 
-    /* TODO: Check result? */
-    asciiArtPrint(list, target);
+    result = asciiArtPrint(list, target);
+    if (RLE_LIST_SUCCESS != result)
+    {
+        RLEListDestroy(list);
+        return;
+    }
 
     RLEListDestroy(list);
 }
@@ -106,13 +109,14 @@ void invert_image(FILE * source, FILE * target)
  * @param OUT target_file: File handler for the target file.
  * */
 void open_files(
-        char * source_path,
-        char * target_path,
-        FILE ** source_file,
-        FILE ** target_file)
+    char* source_path,
+    char* target_path,
+    FILE** source_file,
+    FILE** target_file
+)
 {
-    FILE * source_out = NULL;
-    FILE * target_out = NULL;
+    FILE* source_out = NULL;
+    FILE* target_out = NULL;
 
     source_out = fopen(source_path, "rt");
     if (NULL == source_out)
@@ -130,20 +134,20 @@ void open_files(
         return;
     }
 
+    /* Transfer of ownership. */
     *source_file = source_out;
     *target_file = target_out;
 }
 
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
-    char * mode = NULL;
-    FILE * source_file = NULL;
-    FILE * target_file = NULL;
+    char* mode = NULL;
+    FILE* source_file = NULL;
+    FILE* target_file = NULL;
 
     if (4 != argc)
     {
-        /* TODO: Remove usage/find required print. */
         printf("USAGE: asciiArtTool FLAG SOURCE TARGET\n");
         return 0;
     }
@@ -154,16 +158,16 @@ int main(int argc, char * argv[])
     {
         CLOSE_FILE(source_file);
         CLOSE_FILE(target_file);
-    }
-
-    if (mode[0] != '-')
-    {
-        /* TODO: Error message? Non-zero output? */
         return 0;
     }
 
-
-    switch(mode[1])
+    if (mode[0] != '-' || strlen(mode) != 2)
+    {
+        CLOSE_FILE(source_file);
+        CLOSE_FILE(target_file);
+        return 0;
+    }
+    switch (mode[1])
     {
         case 'e':
             encode_image(source_file, target_file);

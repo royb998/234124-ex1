@@ -17,7 +17,7 @@
  * @return
  *  RLEList instance.
  * */
-RLEList asciiArtRead(FILE * in_stream);
+RLEList asciiArtRead(FILE* in_stream);
 
 
 /**
@@ -27,9 +27,11 @@ RLEList asciiArtRead(FILE * in_stream);
  * @param out_stream: Stream handle to print into.
  *
  * @return
- *  TODO
+ *  RLE_LIST_ERROR when failing to write to file.
+ *  RLE_LIST_SUCCESS when operation went successfully.
+ *  Errors from RLEList module calls propagate.
  * */
-RLEListResult asciiArtPrint(RLEList list, FILE *out_stream);
+RLEListResult asciiArtPrint(RLEList list, FILE* out_stream);
 
 
 /**
@@ -42,6 +44,6 @@ RLEListResult asciiArtPrint(RLEList list, FILE *out_stream);
  *  RLE_LIST_NULL_ARGUMENT - If any parameter is NULL.
  *  RLE_LIST_SUCCESS - In case of success.
  * */
-RLEListResult asciiArtPrintEncoded(RLEList list, FILE *out_stream);
+RLEListResult asciiArtPrintEncoded(RLEList list, FILE* out_stream);
 
 #endif
