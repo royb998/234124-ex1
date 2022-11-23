@@ -25,6 +25,7 @@
 
 RLEList asciiArtRead(FILE* in_stream)
 {
+    /* TODO: Check for success. */
     RLEList list = RLEListCreate();
     char current = '\0';
 

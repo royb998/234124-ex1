@@ -1,3 +1,4 @@
+#include <malloc.h>
 #include "AsciiArtTool.h"
 
 /* ---------- Macros ---------- */
@@ -10,6 +11,15 @@
     }                           \
 } while (0)
 
+#define FREE_PTR(ptr) do {  \
+    if (NULL != ptr)        \
+    {                       \
+        free((ptr));        \
+    }                       \
+} while (0)
+
+/* ---------- Functions ---------- */
+
 
 /**
  * Save the image in path `source` into a file in path `target` as an encoded
@@ -20,7 +30,46 @@
  * */
 void encode_image(FILE * source, FILE * target)
 {
+    RLEList list = NULL;
+    RLEListResult result;
 
+    list = asciiArtRead(source);
+    if (NULL == list)
+    {
+        return;
+    }
+
+    result = asciiArtPrintEncoded(list, target);
+    if (RLE_LIST_SUCCESS != result)
+    {
+        /* TODO: Error output? */
+        FREE_PTR(list);
+        return;
+    }
+
+    FREE_PTR(list);
+}
+
+
+/**
+ * Invert the given character, such that every space (' ') is replaced with an
+ * "at" sign ('@') and vice-versa. Any other character is mapped to itself.
+ *
+ * @param c: Character to map.
+ *
+ * @return: Inverted character.
+ * */
+char invert_ascii(char c)
+{
+    switch (c)
+    {
+        case ' ':
+            return '@';
+        case '@':
+            return ' ';
+        default:
+            return c;
+    }
 }
 
 
@@ -33,10 +82,37 @@ void encode_image(FILE * source, FILE * target)
  * */
 void invert_image(FILE * source, FILE * target)
 {
+    RLEList list = NULL;
+    RLEListResult result;
 
+    list = asciiArtRead(source);
+    if (NULL == list)
+    {
+        return;
+    }
+
+    result = RLEListMap(list, &invert_ascii);
+    if (RLE_LIST_SUCCESS != result)
+    {
+        FREE_PTR(list);
+        return;
+    }
+
+    /* TODO: Check result? */
+    asciiArtPrint(list, target);
+
+    FREE_PTR(list);
 }
 
 
+/**
+ * Open the source and target files for the tool.
+ *
+ * @param source_path: Path to source file to open.
+ * @param target_path: Path to target file to open.
+ * @param OUT source_file: File handler for the source file.
+ * @param OUT target_file: File handler for the target file.
+ * */
 void open_files(
         char * source_path,
         char * target_path,
@@ -105,5 +181,7 @@ int main(int argc, char * argv[])
             break;
     }
 
+    CLOSE_FILE(source_file);
+    CLOSE_FILE(target_file);
     return 0;
 }
