@@ -36,7 +36,6 @@ struct RLEList_t
 RLEListResult removeNode(RLEList list, Node node, Node previous)
 {
     assert(0 == node->count);
-    assert(node == previous->next);
     if (NULL == node || (NULL == previous && list->first != node))
     {
         return RLE_LIST_NULL_ARGUMENT;
@@ -49,6 +48,7 @@ RLEListResult removeNode(RLEList list, Node node, Node previous)
     }
     else
     {
+        assert(node == previous->next);
         previous->next = node->next;
         if (node == list->last)
         {
@@ -172,12 +172,15 @@ RLEListResult RLEListRemove(RLEList list, int index)
     }
 
     /* Merge duplicate consecutive characters. */
-    Node next = previous->next;
-    if (previous->data == next->data)
+    if (NULL != previous)
     {
-        previous->count += next->count;
-        next->count = 0;
-        removeNode(list, next, previous);
+        Node next = previous->next;
+        if (next != NULL && previous->data == next->data)
+        {
+            previous->count += next->count;
+            next->count = 0;
+            removeNode(list, next, previous);
+        }
     }
 
     list->count--;
@@ -246,16 +249,11 @@ RLEListResult RLEListMap(RLEList list, MapFunction map_function)
     return RLE_LIST_SUCCESS;
 }
 
-void itoa(int value, char* p_string, int n)
-{
-    snprintf(p_string, n, "%d", value);
-}
-
 int integerSize(int value)
 {
     char countStr[10];
 
-    itoa(value, countStr, 10);
+    snprintf(countStr, sizeof(countStr), "%d", value);
     int length = strlen(countStr);
 
     return length;
@@ -300,6 +298,7 @@ char* RLEListExportToString(RLEList list, RLEListResult* result)
         int length = integerSize(node->count);
         index += length + 2;
     }
+    resultStr[resultStrLength] = '\0';
 
     if (NULL != result)
     {
